@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>カレンダー表示</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/main.min.css">
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+  <header>
+    <h1>推し活カレンダー</h1>
+    <a href="/" class="btn">← ホームに戻る</a>
+  </header>
+
+  <div id="calendar"></div>
+
+  <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/main.min.js"></script>
+  <script src="{{ url_for('static', filename='script.js') }}"></script>
+
+  <!-- JSON データを安全に埋め込む -->
+  <script id="event-data" type="application/json">
+    {{ events|tojson }}
+  </script>
+
+  <script>
+    // JSON データを読み取りパースして渡す
+    const calendarEventsFromServer = JSON.parse(document.getElementById('event-data').textContent);
+    renderCalendar(calendarEventsFromServer);
+  </script>
+</body>
+</html>
+
+
