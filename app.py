@@ -1,43 +1,24 @@
 # app.py
-from flask import Flask, render_template, request, redirect, url_for, jsonify
+from flask import Flask, render_template, jsonify
 import json
 import os
 
 app = Flask(__name__)
 
-data_file = 'data/artists.json'
-
-# Helper function to load artist data
-def load_artists():
-    if os.path.exists(data_file):
-        with open(data_file, 'r', encoding='utf-8') as f:
-            return json.load(f)
-    return []
-
-# Helper function to save artist data
-def save_artists(artists):
-    with open(data_file, 'w', encoding='utf-8') as f:
-        json.dump(artists, f, ensure_ascii=False, indent=2)
-
-@app.route('/')
+@app.route("/")
 def index():
-    return render_template('index.html')
+    return render_template("index.html")  # ホーム画面
 
-@app.route('/artists', methods=['GET', 'POST'])
-def artists():
-    artists = load_artists()
-    if request.method == 'POST':
-        name = request.form.get('name')
-        genre = request.form.get('genre')
-        if name and genre:
-            artists.append({"name": name, "genre": genre})
-            save_artists(artists)
-            return redirect(url_for('artists'))
-    return render_template('artists.html', artists=artists)
+@app.route("/calendar")
+def calendar():
+    # JSONファイルからイベントを読み込む
+    data_path = os.path.join(app.root_path, 'data', 'artists.json')
+    with open(data_path, 'r', encoding='utf-8') as f:
+        events = json.load(f)
+    return render_template("calendar.html", events=events)
 
-@app.route('/api/artists', methods=['GET'])
-def get_artists():
-    return jsonify(load_artists())
+# 静的ファイルは static/ に置いてある必要があります
+# テンプレートは templates/ に置いてある必要があります
 
 if __name__ == '__main__':
     app.run(debug=True)
