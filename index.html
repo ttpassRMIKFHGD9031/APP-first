@@ -12,14 +12,20 @@
 
   <main>
     <section class="form-section">
-      <h2>アーティスト登録</h2>
+      <h2>アーティスト登録 & 検索</h2>
       <input type="text" id="artistInput" placeholder="アーティスト名" />
       <button onclick="addArtist()">追加</button>
+      <button onclick="searchArtist()">検索</button>
     </section>
 
     <section class="list-section">
       <h2>マイアーティスト</h2>
       <ul id="artistList"></ul>
+    </section>
+
+    <section class="artist-info-section" id="artistInfoSection" style="display:none;">
+      <h2>検索結果</h2>
+      <div id="artistInfo"></div>
     </section>
 
     <section class="nav-section">
@@ -30,4 +36,5 @@
   <script src="script.js"></script>
 </body>
 </html>
+
 
