@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <title>推し活カレンダー</title>
-  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="style.css" />
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/main.min.css" />
 </head>
 <body>
@@ -11,9 +11,18 @@
     <h1>推し活カレンダー</h1>
     <a href="index.html" class="btn">← ホームに戻る</a>
   </header>
+
+  <section class="form-section">
+    <h2>イベント登録</h2>
+    <input type="text" id="eventTitle" placeholder="イベント名" />
+    <input type="date" id="eventDate" />
+    <button onclick="addEvent()">イベント追加</button>
+  </section>
+
   <div id="calendar"></div>
 
   <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/main.min.js"></script>
   <script src="script.js"></script>
 </body>
 </html>
+

@@ -2,15 +2,32 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8" />
-  <title>推し活ホーム</title>
-  <link rel="stylesheet" href="style.css">
+  <title>推し活管理アプリ</title>
+  <link rel="stylesheet" href="style.css" />
 </head>
 <body>
   <header>
     <h1>推し活管理アプリ</h1>
   </header>
+
   <main>
-    <a href="calendar.html" class="btn">カレンダーを表示</a>
+    <section class="form-section">
+      <h2>アーティスト登録</h2>
+      <input type="text" id="artistInput" placeholder="アーティスト名" />
+      <button onclick="addArtist()">追加</button>
+    </section>
+
+    <section class="list-section">
+      <h2>マイアーティスト</h2>
+      <ul id="artistList"></ul>
+    </section>
+
+    <section class="nav-section">
+      <a href="calendar.html" class="btn">📅 カレンダーを表示</a>
+    </section>
   </main>
+
+  <script src="script.js"></script>
 </body>
 </html>
+
