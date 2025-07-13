@@ -1,84 +1,143 @@
-* { margin: 0; padding: 0; box-sizing: border-box; }
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
 body {
-  background: linear-gradient(135deg, #1a1a1a, #ffb6c1);
-  color: #fff0f6;
-  font-family: sans-serif;
+  background-color: #1a1a1a; /* 黒ベース */
+  color: #ffe9f3;            /* 薄いピンク文字 */
+  font-family: 'Segoe UI', sans-serif;
   min-height: 100vh;
   display: flex;
   flex-direction: column;
   align-items: center;
+  padding: 20px;
 }
+
 header h1 {
-  margin: 20px 0;
-  font-size: 2.4rem;
-  text-shadow: 0 0 8px #ffb6c1;
+  font-size: 2.5rem;
+  margin-bottom: 20px;
+  text-align: center;
+  color: #ffb6c1; /* 桜色 */
+  text-shadow: 0 0 10px #ffb6c1;
 }
+
 nav {
   display: flex;
-  gap: 12px;
-  margin-bottom: 20px;
+  gap: 15px;
+  margin-bottom: 30px;
+  flex-wrap: wrap;
+  justify-content: center;
 }
+
 .nav-btn {
+  background-color: transparent;
   border: 2px solid #ffb6c1;
-  background: transparent;
-  color: #fff0f6;
+  color: #ffb6c1;
   padding: 10px 20px;
-  border-radius: 30px;
+  border-radius: 25px;
+  font-size: 1rem;
   cursor: pointer;
+  transition: 0.3s ease;
 }
-.nav-btn.active,
-.nav-btn:hover {
-  background: #ffb6c1;
+
+.nav-btn:hover,
+.nav-btn.active {
+  background-color: #ffb6c1;
   color: #1a1a1a;
 }
+
 main {
-  background: rgba(255,182,193,0.15);
-  padding: 20px;
+  background-color: rgba(255, 182, 193, 0.1); /* 桜色の半透明 */
+  padding: 30px;
   border-radius: 20px;
-  max-width: 900px;
-  width: 90%;
+  width: 100%;
+  max-width: 960px;
+  box-shadow: 0 0 10px rgba(255, 182, 193, 0.3);
 }
-.section { display: none; }
-.section.active { display: block; }
+
+.section {
+  display: none;
+}
+
+.section.active {
+  display: block;
+}
+
 #artist-search-input {
   width: 100%;
   padding: 12px;
   margin-bottom: 10px;
-  border-radius: 12px;
-  border: none;
-}
-.suggestions {
-  background: rgba(255,182,193,0.4);
   border-radius: 10px;
+  border: 1px solid #ffb6c1;
+  background-color: #2a2a2a;
+  color: #fff0f6;
+  font-size: 1rem;
+}
+
+.suggestions {
+  background-color: #2a2a2a;
+  border: 1px solid #ffb6c1;
+  border-radius: 10px;
+  padding: 5px;
+  margin-bottom: 10px;
   max-height: 150px;
   overflow-y: auto;
-  margin-bottom: 10px;
 }
+
 .suggestions div {
   padding: 8px;
   cursor: pointer;
 }
+
 .suggestions div:hover {
-  background: #ffb6c1;
+  background-color: #ffb6c1;
+  color: #1a1a1a;
 }
+
 .artist-info {
-  background: rgba(255,182,193,0.3);
-  border-radius: 12px;
-  padding: 12px;
+  background-color: #2a2a2a;
+  border-left: 5px solid #ffb6c1;
+  padding: 15px;
+  border-radius: 10px;
+  margin-top: 10px;
 }
-#calendar {
-  background: rgba(255,182,193,0.3);
-  border-radius: 12px;
+
+.artist-info a {
+  color: #ffb6c1;
+  text-decoration: underline;
+}
+
+.artist-info button {
+  margin-top: 10px;
+  background-color: #ffb6c1;
+  color: #1a1a1a;
+  border: none;
   padding: 10px;
+  border-radius: 15px;
+  cursor: pointer;
+  font-weight: bold;
 }
+
+#calendar {
+  background-color: #2a2a2a;
+  border-radius: 10px;
+  padding: 10px;
+  color: #ffe9f3;
+}
+
 #my-artist-list,
 #notification-list {
-  background: rgba(255,182,193,0.3);
-  border-radius: 12px;
-  padding: 12px;
+  background-color: #2a2a2a;
+  border-left: 5px solid #ffb6c1;
+  border-radius: 10px;
+  padding: 15px;
+  margin-top: 10px;
 }
+
 #my-artist-list li,
 #notification-list li {
-  margin-bottom: 6px;
+  margin-bottom: 8px;
 }
 
