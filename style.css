@@ -1,52 +1,127 @@
-body {
-  font-family: "Segoe UI", sans-serif;
-  background-color: #f7f7f9;
-  color: #333;
+/* リセット＋ベース */
+* {
   margin: 0;
   padding: 0;
+  box-sizing: border-box;
+}
+body {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background: linear-gradient(135deg, #1e3c72, #2a5298);
+  color: #eee;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
 }
 
 header {
-  background-color: #6b46c1;
-  color: white;
-  padding: 1rem;
+  padding: 20px;
   text-align: center;
+  background-color: rgba(30, 60, 114, 0.9);
+  box-shadow: 0 2px 6px rgba(0,0,0,0.5);
+  font-size: 2rem;
+  font-weight: bold;
+  letter-spacing: 1.2px;
+}
+
+nav {
+  display: flex;
+  justify-content: center;
+  background: rgba(42, 82, 152, 0.9);
+  padding: 10px;
+  gap: 10px;
+}
+
+.nav-btn {
+  background: transparent;
+  border: 2px solid #eee;
+  color: #eee;
+  padding: 10px 20px;
+  cursor: pointer;
+  border-radius: 25px;
+  font-weight: 600;
+  transition: all 0.3s ease;
+}
+.nav-btn:hover,
+.nav-btn.active {
+  background: #f72585;
+  border-color: #f72585;
+  color: white;
+  box-shadow: 0 0 10px #f72585;
 }
 
 main {
-  padding: 2rem;
+  flex-grow: 1;
+  padding: 20px;
+  max-width: 1200px;
+  margin: 0 auto;
+  width: 100%;
 }
 
-section {
-  margin-bottom: 2rem;
+.section {
+  display: none;
+  animation: fadeIn 0.6s ease forwards;
 }
 
-input, button {
-  padding: 0.5rem;
-  margin-right: 0.5rem;
+.section.active {
+  display: block;
 }
 
-button, .btn {
-  background-color: #6b46c1;
-  color: white;
+#artist-search-input {
+  width: 100%;
+  padding: 12px 15px;
+  font-size: 1.2rem;
+  border-radius: 10px;
   border: none;
+  margin-bottom: 10px;
+}
+
+.suggestions {
+  background: rgba(0,0,0,0.6);
+  border-radius: 10px;
+  max-height: 150px;
+  overflow-y: auto;
+  margin-bottom: 10px;
+}
+.suggestions div {
+  padding: 10px;
   cursor: pointer;
-  border-radius: 4px;
-  text-decoration: none;
-  padding: 0.5rem 1rem;
+  border-bottom: 1px solid #444;
+}
+.suggestions div:hover {
+  background: #f72585;
+  color: white;
 }
 
-button:hover, .btn:hover {
-  background-color: #553c9a;
+.artist-info {
+  background: rgba(0,0,0,0.6);
+  border-radius: 10px;
+  padding: 15px;
+  font-size: 1rem;
 }
 
-ul {
-  list-style-type: disc;
-  padding-left: 1.5rem;
+#my-artist-list, #notification-list {
+  list-style: none;
+  background: rgba(0,0,0,0.6);
+  border-radius: 10px;
+  padding: 15px;
+  max-height: 400px;
+  overflow-y: auto;
 }
 
-#artistInfo {
-  background-color: #eee;
-  padding: 1rem;
-  border-radius: 8px;
+#my-artist-list li, #notification-list li {
+  padding: 10px;
+  border-bottom: 1px solid #444;
+}
+
+#calendar {
+  max-width: 100%;
+  margin: 0 auto;
+  background: rgba(0,0,0,0.6);
+  border-radius: 15px;
+  padding: 15px;
+}
+
+@keyframes fadeIn {
+  from {opacity: 0;}
+  to {opacity: 1;}
 }
