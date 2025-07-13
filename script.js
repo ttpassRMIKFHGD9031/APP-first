@@ -1,186 +1,107 @@
-// script.js
-
 document.addEventListener('DOMContentLoaded', () => {
-  // === 要素取得 ===
-  const btnShowSearch = document.getElementById('btn-show-search');
-  const btnShowCalendar = document.getElementById('btn-show-calendar');
-  const btnShowMyArtists = document.getElementById('btn-show-myartists');
-  const btnShowNotifications = document.getElementById('btn-show-notifications');
-
+  const btnSearch = document.getElementById('btn-show-search');
+  const btnCal = document.getElementById('btn-show-calendar');
+  const btnMa = document.getElementById('btn-show-myartists');
+  const btnNot = document.getElementById('btn-show-notifications');
   const sections = {
     search: document.getElementById('section-search'),
     calendar: document.getElementById('section-calendar'),
     myartists: document.getElementById('section-myartists'),
-    notifications: document.getElementById('section-notifications'),
+    notifications: document.getElementById('section-notifications')
   };
+  const artistInput = document.getElementById('artist-search-input');
+  const sugg = document.getElementById('artist-suggestions');
+  const info = document.getElementById('artist-info');
+  const myList = document.getElementById('my-artist-list');
+  const notList = document.getElementById('notification-list');
 
-  const artistSearchInput = document.getElementById('artist-search-input');
-  const artistSuggestions = document.getElementById('artist-suggestions');
-  const artistInfo = document.getElementById('artist-info');
-
-  const myArtistList = document.getElementById('my-artist-list');
-  const notificationList = document.getElementById('notification-list');
-
-  // === グローバルデータ ===
   let myArtists = [];
   let notifications = [];
 
-  // === ページ切替関数 ===
-  function switchSection(sectionKey) {
-    Object.keys(sections).forEach(key => {
-      if (key === sectionKey) {
-        sections[key].classList.add('active');
-      } else {
-        sections[key].classList.remove('active');
-      }
+  function showSection(key) {
+    Object.keys(sections).forEach(k => {
+      sections[k].classList.toggle('active', k === key);
     });
-
-    // ボタンのactive切り替え
-    [btnShowSearch, btnShowCalendar, btnShowMyArtists, btnShowNotifications].forEach(btn => {
-      btn.classList.remove('active');
-    });
-    if (sectionKey === 'search') btnShowSearch.classList.add('active');
-    if (sectionKey === 'calendar') btnShowCalendar.classList.add('active');
-    if (sectionKey === 'myartists') btnShowMyArtists.classList.add('active');
-    if (sectionKey === 'notifications') btnShowNotifications.classList.add('active');
-
-    if (sectionKey === 'calendar') {
-      renderCalendar();
-    } else {
-      // FullCalendarがあれば破棄
-      if (calendar) {
-        calendar.destroy();
-        calendar = null;
-      }
+    document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+    {
+      const map = { search: btnSearch, calendar: btnCal, myartists: btnMa, notifications: btnNot };
+      map[key].classList.add('active');
     }
+    if (key === 'calendar') renderCalendar();
+    else if (window.calendar) { window.calendar.destroy(); window.calendar = null; }
   }
 
-  // === 通知追加 ===
-  function addNotification(text) {
-    const now = new Date();
-    notifications.push({ id: Date.now(), text, date: now.toLocaleString() });
-    renderNotifications();
-    if (Notification.permission === "granted") {
-      new Notification("推し活通知", { body: text });
-    }
-  }
+  btnSearch.onclick = () => showSection('search');
+  btnCal.onclick = () => showSection('calendar');
+  btnMa.onclick = () => { showSection('myartists'); renderMyArtists(); };
+  btnNot.onclick = () => { showSection('notifications'); renderNotifications(); };
 
-  // === レンダリング関数 ===
   function renderMyArtists() {
-    myArtistList.innerHTML = '';
-    if (myArtists.length === 0) {
-      myArtistList.innerHTML = '<li>まだ登録されたアーティストはいません。</li>';
-      return;
-    }
-    myArtists.forEach(artist => {
-      const li = document.createElement('li');
-      li.textContent = artist.name;
-      myArtistList.appendChild(li);
-    });
+    myList.innerHTML = myArtists.length
+      ? myArtists.map(a => `<li>${a.name}</li>`).join('')
+      : '<li>登録なし</li>';
   }
 
   function renderNotifications() {
-    notificationList.innerHTML = '';
-    if (notifications.length === 0) {
-      notificationList.innerHTML = '<li>通知はありません。</li>';
-      return;
-    }
-    notifications.forEach(n => {
-      const li = document.createElement('li');
-      li.textContent = `[${n.date}] ${n.text}`;
-      notificationList.appendChild(li);
-    });
+    notList.innerHTML = notifications.length
+      ? notifications.map(n => `<li>${n.date} - ${n.text}</li>`).join('')
+      : '<li>通知なし</li>';
   }
 
-  // === FullCalendar初期化 ===
-  let calendar = null;
-  function renderCalendar() {
-    if (!calendar) {
-      calendar = new FullCalendar.Calendar(document.getElementById('calendar'), {
-        initialView: 'dayGridMonth',
-        themeSystem: 'standard',
-        events: myArtists.map(artist => ({
-          title: artist.name + ' ライブ',
-          start: artist.nextLiveDate || new Date().toISOString().split('T')[0],
-          allDay: true,
-        })),
-        height: 'auto',
-      });
-      calendar.render();
-    } else {
-      calendar.refetchEvents();
-    }
-  }
-
-  // === アーティスト検索（サンプル）===
-  const sampleArtists = [
-    { name: '米津玄師', genre: 'J-Pop', description: '日本のシンガーソングライター。', officialWebsite: 'https://www.yonezukenshi.jp/' },
-    { name: '星野源', genre: 'J-Pop', description: 'シンガーソングライター、俳優。', officialWebsite: 'https://www.hoshinogen.com/' },
-    { name: 'YOASOBI', genre: 'J-Pop', description: '音楽ユニット。', officialWebsite: 'https://www.yoasobi-music.jp/' },
-  ];
-
-  function filterArtists(query) {
-    return sampleArtists.filter(artist => artist.name.includes(query));
-  }
-
-  function showSuggestions(query) {
-    if (!query) {
-      artistSuggestions.innerHTML = '';
-      return;
-    }
-    const results = filterArtists(query);
-    artistSuggestions.innerHTML = '';
-    results.forEach(artist => {
-      const div = document.createElement('div');
-      div.textContent = artist.name;
-      div.onclick = () => showArtistInfo(artist);
-      artistSuggestions.appendChild(div);
-    });
-  }
-
-  function showArtistInfo(artist) {
-    artistInfo.innerHTML = `
-      <h3>${artist.name}</h3>
-      <p><strong>ジャンル:</strong> ${artist.genre}</p>
-      <p>${artist.description}</p>
-      <p><a href="${artist.officialWebsite}" target="_blank" rel="noopener noreferrer">公式サイトへ</a></p>
-      <button id="btn-add-artist">マイアーティストに追加</button>
-    `;
-    document.getElementById('btn-add-artist').onclick = () => {
-      if (myArtists.find(a => a.name === artist.name)) {
-        alert('すでにマイアーティストに登録されています');
-        return;
-      }
-      myArtists.push(artist);
-      addNotification(`${artist.name} をマイアーティストに追加しました！`);
-      renderMyArtists();
-      artistInfo.innerHTML = '';
-      artistSuggestions.innerHTML = '';
-      artistSearchInput.value = '';
-    };
-  }
-
-  // === イベントリスナー登録 ===
-  artistSearchInput.addEventListener('input', e => {
-    showSuggestions(e.target.value.trim());
-  });
-
-  btnShowSearch.addEventListener('click', () => switchSection('search'));
-  btnShowCalendar.addEventListener('click', () => switchSection('calendar'));
-  btnShowMyArtists.addEventListener('click', () => {
-    switchSection('myartists');
-    renderMyArtists();
-  });
-  btnShowNotifications.addEventListener('click', () => {
-    switchSection('notifications');
+  function notify(text) {
+    const now = new Date().toLocaleTimeString();
+    notifications.push({ text, date: now });
     renderNotifications();
-  });
-
-  // 通知の許可要求
-  if ("Notification" in window && Notification.permission !== "granted") {
-    Notification.requestPermission();
+    if (Notification.permission === 'granted') new Notification('通知', { body: text });
   }
 
-  // 最初は検索画面を表示
-  switchSection('search');
+  const sample = [
+    { name: '米津玄師', genre: 'J‑Pop', description: 'シンガーソングライター', website: '#' },
+    { name: 'YOASOBI', genre: 'J‑Pop', description: '物語的な楽曲', website: '#' },
+    { name: 'Aimer', genre: 'J‑Pop/ロック', description: '幻想的な歌声', website: '#' }
+  ];
+  function filterArtists(q) { return sample.filter(a => a.name.includes(q)); }
+
+  artistInput.oninput = e => {
+    const q = e.target.value.trim();
+    sugg.innerHTML = '';
+    info.innerHTML = '';
+    if (!q) return;
+    filterArtists(q).forEach(a => {
+      const d = document.createElement('div');
+      d.textContent = a.name;
+      d.onclick = () => {
+        info.innerHTML = `
+          <h3>${a.name}</h3>
+          <p>${a.genre}</p>
+          <p>${a.description}</p>
+          <a href="${a.website}" target="_blank">公式サイト</a>
+          <button id="addArtistBtn">マイアーティストに追加</button>`;
+        document.getElementById('addArtistBtn').onclick = () => {
+          if (!myArtists.find(x => x.name === a.name)) {
+            myArtists.push(a);
+            notify(`${a.name} を登録しました`);
+            renderMyArtists();
+          } else alert('すでにあり');
+        };
+        sugg.innerHTML = '';
+      };
+      sugg.append(d);
+    });
+  };
+
+  window.calendar = null;
+  function renderCalendar() {
+    if (!window.calendar) {
+      window.calendar = new FullCalendar.Calendar(document.getElementById('calendar'), {
+        initialView: 'dayGridMonth',
+        events: myArtists.map(a => ({ title: a.name, start: new Date().toISOString().split('T')[0], allDay: true })),
+        height: 550
+      });
+      window.calendar.render();
+    }
+  }
+
+  if (Notification.permission !== 'granted') Notification.requestPermission();
+  showSection('search');
 });

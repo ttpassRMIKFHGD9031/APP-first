@@ -3,13 +3,12 @@
 <head>
   <meta charset="UTF-8" />
   <title>推し活管理アプリ</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link rel="stylesheet" href="style.css" />
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/main.min.css" />
 </head>
 <body>
-  <header>
-    <h1>推し活管理アプリ</h1>
-  </header>
+  <header><h1>推し活管理アプリ</h1></header>
 
   <nav>
     <button id="btn-show-search" class="nav-btn active">アーティスト検索</button>
@@ -20,7 +19,7 @@
 
   <main>
     <section id="section-search" class="section active">
-      <input type="text" id="artist-search-input" placeholder="アーティスト名を入力" autocomplete="off" />
+      <input type="text" id="artist-search-input" placeholder="アーティスト名を入力" autocomplete="off">
       <div id="artist-suggestions" class="suggestions"></div>
       <div id="artist-info" class="artist-info"></div>
     </section>
