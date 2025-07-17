@@ -34,6 +34,20 @@ let today = new Date();
 let currentYear = today.getFullYear();
 let currentMonth = today.getMonth();
 
+let sampleArtists = [];
+
+// --- アーティストデータの読み込み ---
+async function loadArtists() {
+  try {
+    const res = await fetch('data/artists.json');
+    if (!res.ok) throw new Error('アーティストデータの取得に失敗しました');
+    sampleArtists = await res.json();
+  } catch (e) {
+    sampleArtists = [];
+    console.error(e);
+  }
+}
+
 // --- ユーティリティ ---
 function formatDate(date) {
   return date.toISOString().slice(0, 10);
@@ -76,37 +90,13 @@ navButtons.forEach(btn => {
 });
 
 // --- アーティスト検索 ---
-// 仮に固定データで検索実装（後でAPIに変更可能）
-const sampleArtists = [
-  { name: "RADWIMPS", genre: "Rock", description: "日本のロックバンド。", officialWebsite: "https://radwimps.jp" },
-  { name: "米津玄師", genre: "J-Pop", description: "日本のシンガーソングライター。", officialWebsite: "https://reissuerecords.net" },
-  { name: "宇多田ヒカル", genre: "Pop", description: "日本の歌手、作詞家。", officialWebsite: "https://www.utadahikaru.jp" },
-  { name: "BUMP OF CHICKEN", genre: "Rock", description: "日本のロックバンド。", officialWebsite: "https://www.bumpofchicken.com" },
-  { name: "YOASOBI", genre: "J-Pop", description: "小説を音楽にするユニット。", officialWebsite: "https://www.yoasobi-music.jp/" },
-  { name: "King Gnu", genre: "Alternative", description: "日本のオルタナティブバンド。", officialWebsite: "https://kinggnu.jp/" },
-  { name: "あいみょん", genre: "J-Pop", description: "日本のシンガーソングライター。", officialWebsite: "https://www.aimyong.net/" },
-  { name: "Perfume", genre: "Techno Pop", description: "日本のテクノポップユニット。", officialWebsite: "https://www.perfume-web.jp/" },
-  { name: "Official髭男dism", genre: "Pop", description: "日本のポップバンド。", officialWebsite: "https://higedan.com/" },
-  { name: "SEKAI NO OWARI", genre: "Pop", description: "日本のバンド。", officialWebsite: "https://sekainoowari.jp/" },
-  { name: "サザンオールスターズ", genre: "Rock", description: "日本のロックバンド。", officialWebsite: "https://southernallstars.jp/" },
-  { name: "Mr.Children", genre: "Pop Rock", description: "日本のポップロックバンド。", officialWebsite: "https://www.mrchildren.jp/" },
-  { name: "back number", genre: "Pop Rock", description: "日本のスリーピースバンド。", officialWebsite: "https://backnumber.info/" },
-  { name: "LiSA", genre: "J-Pop", description: "日本の女性歌手。", officialWebsite: "https://www.lxixsxa.com/" },
-  { name: "ONE OK ROCK", genre: "Rock", description: "日本のロックバンド。", officialWebsite: "https://www.oneokrock.com/" },
-  { name: "ももいろクローバーZ", genre: "Idol", description: "日本の女性アイドルグループ。", officialWebsite: "https://www.momoclo.net/" },
-  { name: "BiSH", genre: "Punk Idol", description: "楽器を持たないパンクバンド。", officialWebsite: "https://www.bish.tokyo/" },
-  { name: "椎名林檎", genre: "J-Pop", description: "日本のシンガーソングライター。", officialWebsite: "https://www.kronekodow.com/" },
-  { name: "スピッツ", genre: "Rock", description: "日本のロックバンド。", officialWebsite: "https://spitz-web.com/" },
-  { name: "ゆず", genre: "Folk", description: "日本のフォークデュオ。", officialWebsite: "https://yuzu-official.com/" }
-];
-
 function filterArtists(keyword) {
   if (!keyword) return [];
   keyword = keyword.toLowerCase();
   return sampleArtists.filter(a => a.name.toLowerCase().includes(keyword));
 }
 
-artistSearchInput.addEventListener('input', () => {
+artistSearchInput.addEventListener('input', async () => {
   const keyword = artistSearchInput.value.trim();
   artistSuggestionsDiv.innerHTML = '';
   artistInfoDiv.innerHTML = '';
@@ -114,6 +104,9 @@ artistSearchInput.addEventListener('input', () => {
   selectedArtist = null;
 
   if (keyword.length === 0) return;
+
+  // データが未ロードならロード
+  if (sampleArtists.length === 0) await loadArtists();
 
   const results = filterArtists(keyword);
   if (results.length === 0) {
@@ -377,7 +370,8 @@ nextMonthBtn.addEventListener('click', () => {
 });
 
 // --- 初期化 ---
-window.addEventListener('DOMContentLoaded', () => {
+window.addEventListener('DOMContentLoaded', async () => {
+  await loadArtists();
   loadMyArtists();
   loadNotifications();
   loadEvents();
