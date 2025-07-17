@@ -96,6 +96,26 @@ function filterArtists(keyword) {
   return sampleArtists.filter(a => a.name.toLowerCase().includes(keyword));
 }
 
+// --- MusicBrainz APIからアーティスト検索 ---
+async function searchArtistsFromAPI(keyword) {
+  const url = `https://musicbrainz.org/ws/2/artist/?query=artist:${encodeURIComponent(keyword)} AND country:JP&fmt=json&limit=10`;
+  try {
+    const res = await fetch(url, { headers: { 'Accept': 'application/json' } });
+    if (!res.ok) throw new Error('API取得失敗');
+    const data = await res.json();
+    // APIのartist配列から必要な情報を抽出
+    return data.artists.map(a => ({
+      name: a.name,
+      genre: a['type'] || '',
+      description: a.disambiguation || '',
+      officialWebsite: (a.relations && a.relations.find(r => r.type === 'official homepage')?.url?.resource) || ''
+    }));
+  } catch (e) {
+    console.error(e);
+    return [];
+  }
+}
+
 artistSearchInput.addEventListener('input', async () => {
   const keyword = artistSearchInput.value.trim();
   artistSuggestionsDiv.innerHTML = '';
@@ -108,7 +128,18 @@ artistSearchInput.addEventListener('input', async () => {
   // データが未ロードならロード
   if (sampleArtists.length === 0) await loadArtists();
 
-  const results = filterArtists(keyword);
+  let results = filterArtists(keyword);
+
+  // ローカル候補が5件未満ならAPIも利用
+  if (results.length < 5) {
+    const apiResults = await searchArtistsFromAPI(keyword);
+    // ローカル候補と重複しないものだけ追加
+    const localNames = new Set(results.map(a => a.name));
+    apiResults.forEach(a => {
+      if (!localNames.has(a.name)) results.push(a);
+    });
+  }
+
   if (results.length === 0) {
     artistSuggestionsDiv.textContent = '該当するアーティストが見つかりません。';
     return;
