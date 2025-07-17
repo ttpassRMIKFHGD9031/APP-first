@@ -268,41 +268,7 @@ function showEventInput(dateStr) {
   selectedDateP.textContent = dateStr;
   eventTextInput.value = '';
   eventColorInput.value = '#f48fb1';
-  // 予定リスト表示
-  const eventListDivId = 'event-list-div';
-  let eventListDiv = document.getElementById(eventListDivId);
-  if (!eventListDiv) {
-    eventListDiv = document.createElement('div');
-    eventListDiv.id = eventListDivId;
-    eventInputDiv.insertBefore(eventListDiv, eventTextInput);
-  }
-  eventListDiv.innerHTML = '';
-  if (events[dateStr] && events[dateStr].length > 0) {
-    const ul = document.createElement('ul');
-    events[dateStr].forEach((ev, idx) => {
-      const li = document.createElement('li');
-      li.textContent = ev.name;
-      li.style.background = ev.color || '#f48fb1';
-      // 削除ボタン
-      const delBtn = document.createElement('button');
-      delBtn.textContent = '削除';
-      delBtn.style.marginLeft = '8px';
-      delBtn.onclick = () => {
-        events[dateStr].splice(idx, 1);
-        if (events[dateStr].length === 0) delete events[dateStr];
-        saveEvents();
-        showEventInput(dateStr);
-        showEventDetail(dateStr);
-        addNotification(`${dateStr} の予定「${ev.name}」を削除しました。`);
-        renderCalendar(currentYear, currentMonth);
-      };
-      li.appendChild(delBtn);
-      ul.appendChild(li);
-    });
-    eventListDiv.appendChild(ul);
-  } else {
-    eventListDiv.textContent = 'この日に予定はありません。';
-  }
+  // event-list-divは廃止
   // 入力欄には最初の予定名と色を表示（複数予定の場合は空欄）
   if (events[dateStr] && events[dateStr].length === 1) {
     eventTextInput.value = events[dateStr][0].name;
@@ -347,12 +313,26 @@ saveEventBtn.addEventListener('click', () => {
 
 function showEventDetail(dateStr) {
   if (!eventDetailContent) return;
+  // 予定リストを右パネルにのみ表示
   if (events[dateStr] && events[dateStr].length > 0) {
     const ul = document.createElement('ul');
-    events[dateStr].forEach(ev => {
+    events[dateStr].forEach((ev, idx) => {
       const li = document.createElement('li');
       li.textContent = ev.name;
       li.style.background = ev.color || '#f48fb1';
+      // 削除ボタン
+      const delBtn = document.createElement('button');
+      delBtn.textContent = '削除';
+      delBtn.className = 'del-btn';
+      delBtn.onclick = () => {
+        events[dateStr].splice(idx, 1);
+        if (events[dateStr].length === 0) delete events[dateStr];
+        saveEvents();
+        renderCalendar(currentYear, currentMonth);
+        showEventDetail(dateStr);
+        addNotification(`${dateStr} の予定「${ev.name}」を削除しました。`);
+      };
+      li.appendChild(delBtn);
       ul.appendChild(li);
     });
     eventDetailContent.innerHTML = '';
