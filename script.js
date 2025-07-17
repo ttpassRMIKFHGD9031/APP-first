@@ -105,3 +105,61 @@ document.addEventListener('DOMContentLoaded', () => {
   if (Notification.permission !== 'granted') Notification.requestPermission();
   showSection('search');
 });
+
+function displayArtistResults(results) {
+  const resultsContainer = document.getElementById("artist-results");
+  resultsContainer.innerHTML = "";
+
+  results.forEach((artist) => {
+    const artistDiv = document.createElement("div");
+    artistDiv.classList.add("artist-result");
+
+    const name = document.createElement("h3");
+    name.textContent = artist.name;
+
+    const info = document.createElement("p");
+    info.textContent = artist.description || "アーティスト情報なし";
+
+    const link = document.createElement("a");
+    link.href = artist.website || "#";
+    link.target = "_blank";
+    link.textContent = "公式サイト";
+
+    const addButton = document.createElement("button");
+    addButton.textContent = "マイアーティストに追加";
+    addButton.classList.add("add-artist-btn");
+    addButton.onclick = function () {
+      addToMyArtists(artist);
+    };
+
+    artistDiv.appendChild(name);
+    artistDiv.appendChild(info);
+    artistDiv.appendChild(link);
+    artistDiv.appendChild(addButton);
+
+    resultsContainer.appendChild(artistDiv);
+  });
+}
+
+function addToMyArtists(artist) {
+  const myArtistsContainer = document.getElementById("my-artists-list");
+
+  // 重複チェック
+  const existing = myArtistsContainer.querySelector(`[data-id="${artist.id}"]`);
+  if (existing) {
+    alert("このアーティストはすでに登録済みです。");
+    return;
+  }
+
+  const artistItem = document.createElement("div");
+  artistItem.setAttribute("data-id", artist.id);
+  artistItem.classList.add("my-artist-item");
+  artistItem.innerHTML = `
+    <h4>${artist.name}</h4>
+    <a href="${artist.website}" target="_blank">公式サイト</a>
+  `;
+
+  myArtistsContainer.appendChild(artistItem);
+
+  alert(`${artist.name} をマイアーティストに追加しました！`);
+}
