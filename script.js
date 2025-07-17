@@ -219,12 +219,34 @@ function renderMyArtists() {
   }
   myArtists.forEach(artist => {
     const li = document.createElement('li');
-    li.textContent = artist.name;
+    li.className = 'artist-card';
+    // アーティスト名
+    const nameDiv = document.createElement('div');
+    nameDiv.className = 'artist-name';
+    nameDiv.textContent = artist.name;
+    li.appendChild(nameDiv);
+    // ジャンル・説明
+    if (artist.genre || artist.description) {
+      const infoDiv = document.createElement('div');
+      infoDiv.className = 'artist-info-mini';
+      if (artist.genre) infoDiv.innerHTML += `<span class='artist-genre'>${artist.genre}</span> `;
+      if (artist.description) infoDiv.innerHTML += `<span class='artist-desc'>${artist.description}</span>`;
+      li.appendChild(infoDiv);
+    }
+    // 公式サイト
+    if (artist.officialWebsite) {
+      const link = document.createElement('a');
+      link.href = artist.officialWebsite;
+      link.target = '_blank';
+      link.rel = 'noopener noreferrer';
+      link.className = 'artist-link-btn';
+      link.textContent = '公式サイトへ';
+      li.appendChild(link);
+    }
     // 削除ボタン
     const delBtn = document.createElement('button');
     delBtn.textContent = '×';
-    delBtn.style.marginLeft = '10px';
-    delBtn.style.cursor = 'pointer';
+    delBtn.className = 'artist-del-btn';
     delBtn.addEventListener('click', () => {
       myArtists = myArtists.filter(a => a.name !== artist.name);
       saveMyArtists();
