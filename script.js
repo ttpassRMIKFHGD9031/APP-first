@@ -159,9 +159,19 @@ function renderMyArtists() {
 }
 
 // --- 通知機能 ---
+function loadNotifications() {
+  const data = localStorage.getItem('notifications');
+  notifications = data ? JSON.parse(data) : [];
+}
+
+function saveNotifications() {
+  localStorage.setItem('notifications', JSON.stringify(notifications));
+}
+
 function addNotification(text) {
   const now = new Date();
   notifications.unshift({ text, time: now.toLocaleTimeString() });
+  saveNotifications();
   renderNotifications();
 }
 
@@ -194,6 +204,16 @@ addArtistBtn.addEventListener('click', () => {
   artistSearchInput.value = '';
 });
 
+// --- カレンダーイベント保存・読込 ---
+function loadEvents() {
+  const data = localStorage.getItem('events');
+  events = data ? JSON.parse(data) : {};
+}
+
+function saveEvents() {
+  localStorage.setItem('events', JSON.stringify(events));
+}
+
 // --- カレンダー機能（簡易版） ---
 function renderCalendar(year, month) {
   calendarBody.innerHTML = '';
@@ -216,11 +236,74 @@ function renderCalendar(year, month) {
         } else {
           const today = new Date();
           const isToday = (dayCount === today.getDate() && month === today.getMonth() && year === today.getFullYear());
-          row += `<td class="${isToday ? 'today' : ''}" data-date="${year}-${String(month + 1).padStart(2, '0')}-${String(dayCount).padStart(2, '0')}">${dayCount}</td>`;
+          const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(dayCount).padStart(2, '0')}`;
+          const hasEvent = events[dateStr] && events[dateStr].length > 0;
+          row += `<td class="${isToday ? 'today' : ''} ${hasEvent ? 'has-event' : ''}" data-date="${dateStr}">${dayCount}${hasEvent ? '★' : ''}</td>`;
         }
       }
     }
     row += '</tr>';
     calendarBody.innerHTML += row;
   }
+  // 日付セルクリックイベント再設定
+  Array.from(calendarBody.querySelectorAll('td[data-date]')).forEach(td => {
+    td.addEventListener('click', () => {
+      const date = td.getAttribute('data-date');
+      showEventInput(date);
+    });
+  });
 }
+
+function showEventInput(dateStr) {
+  eventInputDiv.classList.remove('hidden');
+  selectedDateP.textContent = dateStr;
+  eventTextInput.value = '';
+  if (events[dateStr] && events[dateStr].length > 0) {
+    eventTextInput.value = events[dateStr].join(', ');
+  }
+  eventInputDiv.setAttribute('data-date', dateStr);
+}
+
+saveEventBtn.addEventListener('click', () => {
+  const dateStr = eventInputDiv.getAttribute('data-date');
+  const text = eventTextInput.value.trim();
+  if (!dateStr) return;
+  if (text) {
+    events[dateStr] = [text];
+    addNotification(`${dateStr} に予定「${text}」を追加しました。`);
+  } else {
+    delete events[dateStr];
+    addNotification(`${dateStr} の予定を削除しました。`);
+  }
+  saveEvents();
+  renderCalendar(currentYear, currentMonth);
+  eventInputDiv.classList.add('hidden');
+});
+
+// 月移動ボタン
+prevMonthBtn.addEventListener('click', () => {
+  currentMonth--;
+  if (currentMonth < 0) {
+    currentMonth = 11;
+    currentYear--;
+  }
+  renderCalendar(currentYear, currentMonth);
+});
+nextMonthBtn.addEventListener('click', () => {
+  currentMonth++;
+  if (currentMonth > 11) {
+    currentMonth = 0;
+    currentYear++;
+  }
+  renderCalendar(currentYear, currentMonth);
+});
+
+// --- 初期化 ---
+window.addEventListener('DOMContentLoaded', () => {
+  loadMyArtists();
+  loadNotifications();
+  loadEvents();
+  renderMyArtists();
+  renderNotifications();
+  renderCalendar(currentYear, currentMonth);
+});
