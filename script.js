@@ -60,6 +60,7 @@ function switchView(viewId) {
     renderNotifications();
   } else if(viewId === 'calendar') {
     renderCalendar(currentYear, currentMonth);
+    if (eventInputDiv) eventInputDiv.classList.add('hidden'); // カレンダー切替時に予定入力欄を必ず隠す
   }
 }
 
