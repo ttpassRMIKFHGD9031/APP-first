@@ -2,31 +2,33 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8" />
-  <title>推し活カレンダー</title>
-  <link rel="stylesheet" href="calendar.css" />
+  <title>推し活管理アプリ</title>
+  <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-  <div class="calendar-container">
-    <div class="calendar-header">
-      <button id="prevMonth">←</button>
-      <span id="monthYear"></span>
-      <button id="nextMonth">→</button>
+  <header>
+    <h1>推し活管理アプリ</h1>
+  </header>
+
+  <main>
+    <input type="text" id="artistInput" placeholder="アーティスト名を入力" />
+    <ul id="suggestions"></ul>
+
+    <div id="artistDetail" class="hidden">
+      <h2 id="artistName"></h2>
+      <img id="artistImage" src="" alt="Artist Image" />
+      <p id="artistDescription"></p>
+      <a id="artistLink" href="#" target="_blank">公式サイト</a><br />
+      <button id="addToFavorites">マイアーティストに追加</button>
+      <button id="setNotification">通知を設定</button>
     </div>
-    <table class="calendar">
-      <thead>
-        <tr>
-          <th>日</th><th>月</th><th>火</th><th>水</th><th>木</th><th>金</th><th>土</th>
-        </tr>
-      </thead>
-      <tbody id="calendarBody"></tbody>
-    </table>
-    <div id="eventInput" class="hidden">
-      <p id="selectedDate"></p>
-      <input type="text" id="eventText" placeholder="予定を入力..." />
-      <button id="saveEvent">保存</button>
+
+    <div id="notificationArea" class="hidden">
+      ✅ 通知が設定されました！
     </div>
-  </div>
-  <script src="calendar.js"></script>
+  </main>
+
+  <script src="script.js"></script>
 </body>
 </html>
 
