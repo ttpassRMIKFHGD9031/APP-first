@@ -175,14 +175,12 @@ function filterArtists(keyword) {
 
 // --- MusicBrainz APIからアーティスト検索 ---
 async function searchArtistsFromAPI(keyword) {
-  const url = `https://musicbrainz.org/ws/2/artist/?query=artist:${encodeURIComponent(keyword)} AND country:JP&fmt=json&limit=10&inc=aliases`;
+  const url = `https://musicbrainz.org/ws/2/artist/?query=artist:${encodeURIComponent(keyword)}&fmt=json&limit=20&inc=aliases`;
   try {
     const res = await fetch(url, { headers: { 'Accept': 'application/json' } });
     if (!res.ok) throw new Error('API取得失敗');
     const data = await res.json();
-    // APIのartist配列から必要な情報を抽出
     return data.artists.map(a => {
-      // aliasやローマ字名も候補に使う
       let romaji = '';
       if (a.aliases) {
         const roma = a.aliases.find(al => /latin|ローマ字/i.test(al.script) || /romaji/i.test(al.name));
@@ -194,7 +192,7 @@ async function searchArtistsFromAPI(keyword) {
         description: a.disambiguation || '',
         officialWebsite: (a.relations && a.relations.find(r => r.type === 'official homepage')?.url?.resource) || '',
         romaji,
-        _api: true // API候補フラグ
+        _api: true
       };
     });
   } catch (e) {
@@ -212,21 +210,22 @@ artistSearchInput.addEventListener('input', async () => {
 
   if (keyword.length === 0) return;
 
-  // データが未ロードならロード
   if (sampleArtists.length === 0) await loadArtists();
 
   let results = filterArtists(keyword);
-
-  // ローカル候補が5件未満ならAPIも利用
   let apiResults = [];
+  // ローカル候補が5件未満、または0件ならAPIも利用
   if (results.length < 5) {
     artistSuggestionsDiv.textContent = 'APIから取得中...';
-    apiResults = await searchArtistsFromAPI(keyword);
-    // ローカル候補と重複しないものだけ追加
-    const localNames = new Set(results.map(a => normalize(a.name)));
-    apiResults.forEach(a => {
-      if (!localNames.has(normalize(a.name))) results.push(a);
-    });
+    try {
+      apiResults = await searchArtistsFromAPI(keyword);
+      const localNames = new Set(results.map(a => normalize(a.name)));
+      apiResults.forEach(a => {
+        if (!localNames.has(normalize(a.name))) results.push(a);
+      });
+    } catch {
+      artistSuggestionsDiv.textContent = 'API取得エラー';
+    }
   }
 
   if (results.length === 0) {
@@ -235,7 +234,7 @@ artistSearchInput.addEventListener('input', async () => {
   }
 
   artistSuggestionsDiv.innerHTML = '';
-  results.forEach(artist => {
+  results.slice(0, 20).forEach(artist => {
     const div = document.createElement('div');
     div.textContent = artist.name + (artist._api ? ' (API)' : '');
     div.title = [artist.romaji, artist.genre, artist.description].filter(Boolean).join(' / ');
