@@ -217,6 +217,39 @@ main {
   color: #311b3f;
 }
 
+/* カレンダーセル内の予定名ラベル */
+.event-label {
+  display: block;
+  margin-top: 4px;
+  padding: 2px 4px;
+  border-radius: 4px;
+  font-size: 0.85em;
+  font-weight: bold;
+  white-space: pre-line;
+  word-break: break-all;
+  color: #fff;
+}
+
+/* 予定詳細パネル */
+#eventDetailPanel {
+  min-height: 200px;
+}
+#eventDetailPanel h3 {
+  margin-top: 0;
+  color: #f48fb1;
+}
+#eventDetailContent ul {
+  padding-left: 1em;
+  margin: 0;
+}
+#eventDetailContent li {
+  margin-bottom: 6px;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-weight: bold;
+  color: #fff;
+}
+
 /* イベント入力フォーム */
 #eventInput {
   margin-top: 10px;

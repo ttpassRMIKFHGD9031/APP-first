@@ -19,13 +19,16 @@ const nextMonthBtn = document.getElementById('nextMonth');
 const eventInputDiv = document.getElementById('eventInput');
 const selectedDateP = document.getElementById('selectedDate');
 const eventTextInput = document.getElementById('eventText');
+const eventColorInput = document.getElementById('eventColor');
 const saveEventBtn = document.getElementById('saveEvent');
+const eventDetailPanel = document.getElementById('eventDetailPanel');
+const eventDetailContent = document.getElementById('eventDetailContent');
 
 let currentView = 'search'; // 現在表示中のセクションID
 let selectedArtist = null; // 現在選択中のアーティストオブジェクト
 let myArtists = [];
 let notifications = [];
-let events = {}; // { 'YYYY-MM-DD': ['イベント1', 'イベント2'] }
+let events = {}; // { 'YYYY-MM-DD': [{ name: 'イベント1', color: '#f48fb1' }, { name: 'イベント2', color: '#4db6ac' }] }
 
 let today = new Date();
 let currentYear = today.getFullYear();
@@ -238,8 +241,12 @@ function renderCalendar(year, month) {
           const today = new Date();
           const isToday = (dayCount === today.getDate() && month === today.getMonth() && year === today.getFullYear());
           const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(dayCount).padStart(2, '0')}`;
-          const hasEvent = events[dateStr] && events[dateStr].length > 0;
-          row += `<td class="${isToday ? 'today' : ''} ${hasEvent ? 'has-event' : ''}" data-date="${dateStr}">${dayCount}${hasEvent ? '★' : ''}</td>`;
+          let cellContent = `<div>${dayCount}</div>`;
+          if (events[dateStr] && events[dateStr].length > 0) {
+            // 予定名を色付きで表示
+            cellContent += events[dateStr].map(ev => `<span class="event-label" style="background:${ev.color || '#f48fb1'};">${ev.name}</span>`).join('');
+          }
+          row += `<td class="${isToday ? 'today' : ''} ${events[dateStr] && events[dateStr].length > 0 ? 'has-event' : ''}" data-date="${dateStr}">${cellContent}</td>`;
         }
       }
     }
@@ -251,6 +258,7 @@ function renderCalendar(year, month) {
     td.addEventListener('click', () => {
       const date = td.getAttribute('data-date');
       showEventInput(date);
+      showEventDetail(date);
     });
   });
 }
@@ -259,6 +267,7 @@ function showEventInput(dateStr) {
   eventInputDiv.classList.remove('hidden');
   selectedDateP.textContent = dateStr;
   eventTextInput.value = '';
+  eventColorInput.value = '#f48fb1';
   // 予定リスト表示
   const eventListDivId = 'event-list-div';
   let eventListDiv = document.getElementById(eventListDivId);
@@ -272,7 +281,8 @@ function showEventInput(dateStr) {
     const ul = document.createElement('ul');
     events[dateStr].forEach((ev, idx) => {
       const li = document.createElement('li');
-      li.textContent = ev;
+      li.textContent = ev.name;
+      li.style.background = ev.color || '#f48fb1';
       // 削除ボタン
       const delBtn = document.createElement('button');
       delBtn.textContent = '削除';
@@ -282,7 +292,8 @@ function showEventInput(dateStr) {
         if (events[dateStr].length === 0) delete events[dateStr];
         saveEvents();
         showEventInput(dateStr);
-        addNotification(`${dateStr} の予定「${ev}」を削除しました。`);
+        showEventDetail(dateStr);
+        addNotification(`${dateStr} の予定「${ev.name}」を削除しました。`);
         renderCalendar(currentYear, currentMonth);
       };
       li.appendChild(delBtn);
@@ -292,9 +303,10 @@ function showEventInput(dateStr) {
   } else {
     eventListDiv.textContent = 'この日に予定はありません。';
   }
-  // 入力欄にはカンマ区切りで既存予定を表示
-  if (events[dateStr]) {
-    eventTextInput.value = events[dateStr].join(', ');
+  // 入力欄には最初の予定名と色を表示（複数予定の場合は空欄）
+  if (events[dateStr] && events[dateStr].length === 1) {
+    eventTextInput.value = events[dateStr][0].name;
+    eventColorInput.value = events[dateStr][0].color || '#f48fb1';
   }
   eventInputDiv.setAttribute('data-date', dateStr);
 }
@@ -302,20 +314,22 @@ function showEventInput(dateStr) {
 saveEventBtn.addEventListener('click', () => {
   const dateStr = eventInputDiv.getAttribute('data-date');
   const text = eventTextInput.value.trim();
+  const color = eventColorInput.value;
   if (!dateStr) return;
   if (text) {
     // カンマ区切りで複数予定を保存
-    const newEvents = text.split(',').map(t => t.trim()).filter(t => t);
+    const newEvents = text.split(',').map(t => t.trim()).filter(t => t).map(name => ({ name, color }));
     const before = events[dateStr] ? [...events[dateStr]] : [];
     events[dateStr] = newEvents;
     saveEvents();
     renderCalendar(currentYear, currentMonth);
     eventInputDiv.classList.add('hidden');
+    showEventDetail(dateStr);
     // 通知
     if (before.length === 0 && newEvents.length > 0) {
-      addNotification(`${dateStr} に予定「${newEvents.join('」「')}」を追加しました。`);
-    } else if (before.join() !== newEvents.join()) {
-      addNotification(`${dateStr} の予定を更新しました: 「${newEvents.join('」「')}」`);
+      addNotification(`${dateStr} に予定「${newEvents.map(e=>e.name).join('」「')}」を追加しました。`);
+    } else if (JSON.stringify(before) !== JSON.stringify(newEvents)) {
+      addNotification(`${dateStr} の予定を更新しました: 「${newEvents.map(e=>e.name).join('」「')}」`);
     } else {
       addNotification(`${dateStr} の予定は変更ありません。`);
     }
@@ -324,11 +338,29 @@ saveEventBtn.addEventListener('click', () => {
       delete events[dateStr];
       saveEvents();
       renderCalendar(currentYear, currentMonth);
+      showEventDetail(dateStr);
       addNotification(`${dateStr} の予定をすべて削除しました。`);
     }
     eventInputDiv.classList.add('hidden');
   }
 });
+
+function showEventDetail(dateStr) {
+  if (!eventDetailContent) return;
+  if (events[dateStr] && events[dateStr].length > 0) {
+    const ul = document.createElement('ul');
+    events[dateStr].forEach(ev => {
+      const li = document.createElement('li');
+      li.textContent = ev.name;
+      li.style.background = ev.color || '#f48fb1';
+      ul.appendChild(li);
+    });
+    eventDetailContent.innerHTML = '';
+    eventDetailContent.appendChild(ul);
+  } else {
+    eventDetailContent.innerHTML = 'この日に予定はありません。';
+  }
+}
 
 // 月移動ボタン
 prevMonthBtn.addEventListener('click', () => {

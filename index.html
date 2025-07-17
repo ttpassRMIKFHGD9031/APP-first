@@ -27,24 +27,31 @@
 
     <!-- カレンダーセクション（実装は別途） -->
     <section id="section-calendar" class="section">
-      <div id="calendar-container">
-        <div class="calendar-header">
-          <button id="prevMonth">←</button>
-          <span id="monthYear"></span>
-          <button id="nextMonth">→</button>
+      <div id="calendar-container" style="display: flex; gap: 24px; align-items: flex-start;">
+        <div style="flex: 1; min-width: 320px;">
+          <div class="calendar-header">
+            <button id="prevMonth">←</button>
+            <span id="monthYear"></span>
+            <button id="nextMonth">→</button>
+          </div>
+          <table class="calendar">
+            <thead>
+              <tr>
+                <th>日</th><th>月</th><th>火</th><th>水</th><th>木</th><th>金</th><th>土</th>
+              </tr>
+            </thead>
+            <tbody id="calendarBody"></tbody>
+          </table>
+          <div id="eventInput" class="hidden">
+            <p id="selectedDate"></p>
+            <input type="text" id="eventText" placeholder="予定を入力..." />
+            <input type="color" id="eventColor" value="#f48fb1" style="margin-left:8px;" />
+            <button id="saveEvent">保存</button>
+          </div>
         </div>
-        <table class="calendar">
-          <thead>
-            <tr>
-              <th>日</th><th>月</th><th>火</th><th>水</th><th>木</th><th>金</th><th>土</th>
-            </tr>
-          </thead>
-          <tbody id="calendarBody"></tbody>
-        </table>
-        <div id="eventInput" class="hidden">
-          <p id="selectedDate"></p>
-          <input type="text" id="eventText" placeholder="予定を入力..." />
-          <button id="saveEvent">保存</button>
+        <div id="eventDetailPanel" style="flex: 1; min-width: 200px; background:#311b3f; border-radius:8px; padding:16px; color:#f8bbd0;">
+          <h3>予定詳細</h3>
+          <div id="eventDetailContent">日付をクリックすると予定が表示されます。</div>
         </div>
       </div>
     </section>
