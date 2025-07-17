@@ -249,11 +249,23 @@ artistSearchInput.addEventListener('input', async () => {
 });
 
 function showArtistInfo(artist) {
+  // 公式サイト候補
+  let mainUrl = artist.officialWebsite;
+  let urlLabel = '公式サイトへ';
+  let extraLinks = [];
+  // API候補でurls配列があれば最初のURLを使う
+  if (!mainUrl && artist.urls && artist.urls.length > 0) {
+    mainUrl = artist.urls[0].url;
+    urlLabel = artist.urls[0].label || 'Web/SNS';
+    // SNSやWikipediaもボタンで表示
+    extraLinks = artist.urls.slice(1);
+  }
   artistInfoDiv.innerHTML = `
     <h3>${artist.name}</h3>
     <p><strong>ジャンル:</strong> ${artist.genre}</p>
     <p>${artist.description}</p>
-    ${artist.officialWebsite ? `<p><a href="${artist.officialWebsite}" target="_blank" rel="noopener noreferrer" style="color:#f48fb1;">公式サイトへ</a></p>` : ''}
+    ${mainUrl ? `<p><a href="${mainUrl}" target="_blank" rel="noopener noreferrer" style="color:#f48fb1;">${urlLabel}</a></p>` : ''}
+    ${extraLinks.length > 0 ? `<div>${extraLinks.map(l => `<a href='${l.url}' target='_blank' rel='noopener noreferrer' style='margin-right:8px;color:#f48fb1;'>${l.label || 'Web/SNS'}</a>`).join('')}</div>` : ''}
   `;
 }
 
