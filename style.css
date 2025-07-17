@@ -1,143 +1,254 @@
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-}
-
+/* 基本配色 */
 body {
-  background-color: #1a1a1a; /* 黒ベース */
-  color: #ffe9f3;            /* 薄いピンク文字 */
-  font-family: 'Segoe UI', sans-serif;
-  min-height: 100vh;
+  background-color: #121212;
+  color: #f8bbd0; /* 櫻色ベース */
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  margin: 0; padding: 0;
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 20px;
+  min-height: 100vh;
 }
 
-header h1 {
-  font-size: 2.5rem;
-  margin-bottom: 20px;
+header {
+  padding: 20px 0;
+  font-size: 2rem;
+  font-weight: bold;
   text-align: center;
-  color: #ffb6c1; /* 桜色 */
-  text-shadow: 0 0 10px #ffb6c1;
+  color: #f48fb1; /* 明るい櫻色 */
 }
 
 nav {
   display: flex;
   gap: 15px;
-  margin-bottom: 30px;
-  flex-wrap: wrap;
+  margin-bottom: 20px;
   justify-content: center;
+  flex-wrap: wrap;
 }
 
 .nav-btn {
-  background-color: transparent;
-  border: 2px solid #ffb6c1;
-  color: #ffb6c1;
+  background-color: #311b3f;
+  border: 2px solid #f48fb1;
+  color: #f8bbd0;
   padding: 10px 20px;
-  border-radius: 25px;
-  font-size: 1rem;
   cursor: pointer;
-  transition: 0.3s ease;
+  font-weight: 600;
+  border-radius: 8px;
+  transition: background-color 0.3s ease;
 }
 
-.nav-btn:hover,
+.nav-btn:hover {
+  background-color: #f48fb1;
+  color: #311b3f;
+}
+
 .nav-btn.active {
-  background-color: #ffb6c1;
-  color: #1a1a1a;
+  background-color: #f48fb1;
+  color: #311b3f;
 }
 
 main {
-  background-color: rgba(255, 182, 193, 0.1); /* 桜色の半透明 */
-  padding: 30px;
-  border-radius: 20px;
-  width: 100%;
-  max-width: 960px;
-  box-shadow: 0 0 10px rgba(255, 182, 193, 0.3);
+  width: 90%;
+  max-width: 900px;
+  flex-grow: 1;
 }
 
+/* セクション共通 */
 .section {
   display: none;
+  margin-top: 20px;
 }
 
 .section.active {
   display: block;
 }
 
+/* 検索セクション */
 #artist-search-input {
   width: 100%;
-  padding: 12px;
-  margin-bottom: 10px;
-  border-radius: 10px;
-  border: 1px solid #ffb6c1;
-  background-color: #2a2a2a;
-  color: #fff0f6;
+  padding: 10px;
   font-size: 1rem;
+  border-radius: 6px;
+  border: 1px solid #f48fb1;
+  background-color: #311b3f;
+  color: #f8bbd0;
+  margin-bottom: 10px;
 }
 
 .suggestions {
-  background-color: #2a2a2a;
-  border: 1px solid #ffb6c1;
-  border-radius: 10px;
-  padding: 5px;
-  margin-bottom: 10px;
+  background-color: #311b3f;
+  border-radius: 6px;
   max-height: 150px;
   overflow-y: auto;
+  border: 1px solid #f48fb1;
+  margin-bottom: 10px;
 }
 
 .suggestions div {
   padding: 8px;
   cursor: pointer;
+  border-bottom: 1px solid #f48fb1;
 }
 
 .suggestions div:hover {
-  background-color: #ffb6c1;
-  color: #1a1a1a;
+  background-color: #f48fb1;
+  color: #311b3f;
 }
 
+/* アーティスト詳細 */
 .artist-info {
-  background-color: #2a2a2a;
-  border-left: 5px solid #ffb6c1;
+  background-color: #311b3f;
   padding: 15px;
-  border-radius: 10px;
-  margin-top: 10px;
+  border-radius: 6px;
+  margin-bottom: 10px;
+  color: #f8bbd0;
 }
 
-.artist-info a {
-  color: #ffb6c1;
-  text-decoration: underline;
-}
-
-.artist-info button {
-  margin-top: 10px;
-  background-color: #ffb6c1;
-  color: #1a1a1a;
+.btn-add-artist {
+  background-color: #f48fb1;
+  color: #311b3f;
   border: none;
-  padding: 10px;
-  border-radius: 15px;
+  padding: 10px 15px;
+  font-weight: 600;
+  border-radius: 8px;
   cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.btn-add-artist:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.btn-add-artist:hover:not(:disabled) {
+  background-color: #f06292;
+}
+
+/* マイアーティストリスト */
+.artist-list {
+  list-style: none;
+  padding-left: 0;
+  color: #f8bbd0;
+}
+
+.artist-list li {
+  padding: 8px 12px;
+  background-color: #311b3f;
+  margin-bottom: 8px;
+  border-radius: 6px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+/* 通知リスト */
+.notification-list {
+  list-style: none;
+  padding-left: 0;
+  color: #f8bbd0;
+}
+
+.notification-list li {
+  background-color: #311b3f;
+  padding: 10px;
+  margin-bottom: 8px;
+  border-radius: 6px;
+}
+
+/* カレンダー */
+#calendar-container {
+  background-color: #311b3f;
+  padding: 10px;
+  border-radius: 8px;
+  color: #f8bbd0;
+  max-width: 100%;
+  overflow-x: auto;
+}
+
+.calendar-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.calendar-header button {
+  background-color: #f48fb1;
+  border: none;
+  padding: 5px 10px;
+  font-weight: bold;
+  border-radius: 6px;
+  cursor: pointer;
+  color: #311b3f;
+  transition: background-color 0.3s ease;
+}
+
+.calendar-header button:hover {
+  background-color: #f06292;
+}
+
+.calendar {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;
+}
+
+.calendar th,
+.calendar td {
+  border: 1px solid #f48fb1;
+  text-align: center;
+  padding: 10px 0;
+  vertical-align: middle;
+  color: #f8bbd0;
+  height: 70px;
+  user-select: none;
+}
+
+.calendar td.today {
+  background-color: #f48fb1;
+  color: #311b3f;
   font-weight: bold;
 }
 
-#calendar {
-  background-color: #2a2a2a;
-  border-radius: 10px;
-  padding: 10px;
-  color: #ffe9f3;
+.calendar td.has-event {
+  background-color: #f06292;
+  cursor: pointer;
+  font-weight: bold;
+  color: #311b3f;
 }
 
-#my-artist-list,
-#notification-list {
-  background-color: #2a2a2a;
-  border-left: 5px solid #ffb6c1;
-  border-radius: 10px;
-  padding: 15px;
+/* イベント入力フォーム */
+#eventInput {
   margin-top: 10px;
 }
 
-#my-artist-list li,
-#notification-list li {
-  margin-bottom: 8px;
+#eventInput.hidden {
+  display: none;
 }
+
+#eventInput input[type="text"] {
+  width: 70%;
+  padding: 8px;
+  border-radius: 6px;
+  border: 1px solid #f48fb1;
+  background-color: #311b3f;
+  color: #f8bbd0;
+  margin-right: 10px;
+}
+
+#eventInput button {
+  background-color: #f48fb1;
+  border: none;
+  padding: 8px 15px;
+  font-weight: 600;
+  border-radius: 6px;
+  cursor: pointer;
+  color: #311b3f;
+  transition: background-color 0.3s ease;
+}
+
+#eventInput button:hover {
+  background-color: #f06292;
+}
+
 

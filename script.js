@@ -1,165 +1,226 @@
-document.addEventListener('DOMContentLoaded', () => {
-  const btnSearch = document.getElementById('btn-show-search');
-  const btnCal = document.getElementById('btn-show-calendar');
-  const btnMa = document.getElementById('btn-show-myartists');
-  const btnNot = document.getElementById('btn-show-notifications');
-  const sections = {
-    search: document.getElementById('section-search'),
-    calendar: document.getElementById('section-calendar'),
-    myartists: document.getElementById('section-myartists'),
-    notifications: document.getElementById('section-notifications')
-  };
-  const artistInput = document.getElementById('artist-search-input');
-  const sugg = document.getElementById('artist-suggestions');
-  const info = document.getElementById('artist-info');
-  const myList = document.getElementById('my-artist-list');
-  const notList = document.getElementById('notification-list');
+// DOM要素取得
+const navButtons = document.querySelectorAll('.nav-btn');
+const sections = document.querySelectorAll('.section');
 
-  let myArtists = [];
-  let notifications = [];
+const artistSearchInput = document.getElementById('artist-search-input');
+const artistSuggestionsDiv = document.getElementById('artist-suggestions');
+const artistInfoDiv = document.getElementById('artist-info');
+const addArtistBtn = document.getElementById('add-artist-btn');
 
-  function showSection(key) {
-    Object.keys(sections).forEach(k => {
-      sections[k].classList.toggle('active', k === key);
-    });
-    document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
-    {
-      const map = { search: btnSearch, calendar: btnCal, myartists: btnMa, notifications: btnNot };
-      map[key].classList.add('active');
-    }
-    if (key === 'calendar') renderCalendar();
-    else if (window.calendar) { window.calendar.destroy(); window.calendar = null; }
-  }
+const myArtistListUl = document.getElementById('my-artist-list');
 
-  btnSearch.onclick = () => showSection('search');
-  btnCal.onclick = () => showSection('calendar');
-  btnMa.onclick = () => { showSection('myartists'); renderMyArtists(); };
-  btnNot.onclick = () => { showSection('notifications'); renderNotifications(); };
+const notificationListUl = document.getElementById('notification-list');
 
-  function renderMyArtists() {
-    myList.innerHTML = myArtists.length
-      ? myArtists.map(a => `<li>${a.name}</li>`).join('')
-      : '<li>登録なし</li>';
-  }
+// カレンダー関連
+const calendarBody = document.getElementById('calendarBody');
+const monthYearSpan = document.getElementById('monthYear');
+const prevMonthBtn = document.getElementById('prevMonth');
+const nextMonthBtn = document.getElementById('nextMonth');
+const eventInputDiv = document.getElementById('eventInput');
+const selectedDateP = document.getElementById('selectedDate');
+const eventTextInput = document.getElementById('eventText');
+const saveEventBtn = document.getElementById('saveEvent');
 
-  function renderNotifications() {
-    notList.innerHTML = notifications.length
-      ? notifications.map(n => `<li>${n.date} - ${n.text}</li>`).join('')
-      : '<li>通知なし</li>';
-  }
+let currentView = 'search'; // 現在表示中のセクションID
+let selectedArtist = null; // 現在選択中のアーティストオブジェクト
+let myArtists = [];
+let notifications = [];
+let events = {}; // { 'YYYY-MM-DD': ['イベント1', 'イベント2'] }
 
-  function notify(text) {
-    const now = new Date().toLocaleTimeString();
-    notifications.push({ text, date: now });
-    renderNotifications();
-    if (Notification.permission === 'granted') new Notification('通知', { body: text });
-  }
+let today = new Date();
+let currentYear = today.getFullYear();
+let currentMonth = today.getMonth();
 
-  const sample = [
-    { name: '米津玄師', genre: 'J‑Pop', description: 'シンガーソングライター', website: '#' },
-    { name: 'YOASOBI', genre: 'J‑Pop', description: '物語的な楽曲', website: '#' },
-    { name: 'Aimer', genre: 'J‑Pop/ロック', description: '幻想的な歌声', website: '#' }
-  ];
-  function filterArtists(q) { return sample.filter(a => a.name.includes(q)); }
-
-  artistInput.oninput = e => {
-    const q = e.target.value.trim();
-    sugg.innerHTML = '';
-    info.innerHTML = '';
-    if (!q) return;
-    filterArtists(q).forEach(a => {
-      const d = document.createElement('div');
-      d.textContent = a.name;
-      d.onclick = () => {
-        info.innerHTML = `
-          <h3>${a.name}</h3>
-          <p>${a.genre}</p>
-          <p>${a.description}</p>
-          <a href="${a.website}" target="_blank">公式サイト</a>
-          <button id="addArtistBtn">マイアーティストに追加</button>`;
-        document.getElementById('addArtistBtn').onclick = () => {
-          if (!myArtists.find(x => x.name === a.name)) {
-            myArtists.push(a);
-            notify(`${a.name} を登録しました`);
-            renderMyArtists();
-          } else alert('すでにあり');
-        };
-        sugg.innerHTML = '';
-      };
-      sugg.append(d);
-    });
-  };
-
-  window.calendar = null;
-  function renderCalendar() {
-    if (!window.calendar) {
-      window.calendar = new FullCalendar.Calendar(document.getElementById('calendar'), {
-        initialView: 'dayGridMonth',
-        events: myArtists.map(a => ({ title: a.name, start: new Date().toISOString().split('T')[0], allDay: true })),
-        height: 550
-      });
-      window.calendar.render();
-    }
-  }
-
-  if (Notification.permission !== 'granted') Notification.requestPermission();
-  showSection('search');
-});
-
-function displayArtistResults(results) {
-  const resultsContainer = document.getElementById("artist-results");
-  resultsContainer.innerHTML = "";
-
-  results.forEach((artist) => {
-    const artistDiv = document.createElement("div");
-    artistDiv.classList.add("artist-result");
-
-    const name = document.createElement("h3");
-    name.textContent = artist.name;
-
-    const info = document.createElement("p");
-    info.textContent = artist.description || "アーティスト情報なし";
-
-    const link = document.createElement("a");
-    link.href = artist.website || "#";
-    link.target = "_blank";
-    link.textContent = "公式サイト";
-
-    const addButton = document.createElement("button");
-    addButton.textContent = "マイアーティストに追加";
-    addButton.classList.add("add-artist-btn");
-    addButton.onclick = function () {
-      addToMyArtists(artist);
-    };
-
-    artistDiv.appendChild(name);
-    artistDiv.appendChild(info);
-    artistDiv.appendChild(link);
-    artistDiv.appendChild(addButton);
-
-    resultsContainer.appendChild(artistDiv);
-  });
+// --- ユーティリティ ---
+function formatDate(date) {
+  return date.toISOString().slice(0, 10);
 }
 
-function addToMyArtists(artist) {
-  const myArtistsContainer = document.getElementById("my-artists-list");
+// --- 画面切替 ---
+function switchView(viewId) {
+  currentView = viewId;
+  sections.forEach(section => {
+    if (section.id === `section-${viewId}`) {
+      section.classList.add('active');
+    } else {
+      section.classList.remove('active');
+    }
+  });
+  navButtons.forEach(btn => {
+    if (btn.id === `btn-show-${viewId}`) {
+      btn.classList.add('active');
+    } else {
+      btn.classList.remove('active');
+    }
+  });
 
-  // 重複チェック
-  const existing = myArtistsContainer.querySelector(`[data-id="${artist.id}"]`);
-  if (existing) {
-    alert("このアーティストはすでに登録済みです。");
+  if(viewId === 'myartists') {
+    renderMyArtists();
+  } else if(viewId === 'notifications') {
+    renderNotifications();
+  } else if(viewId === 'calendar') {
+    renderCalendar(currentYear, currentMonth);
+  }
+}
+
+// ナビボタンにイベント設定
+navButtons.forEach(btn => {
+  btn.addEventListener('click', () => {
+    const target = btn.id.replace('btn-show-', '');
+    switchView(target);
+  });
+});
+
+// --- アーティスト検索 ---
+// 仮に固定データで検索実装（後でAPIに変更可能）
+const sampleArtists = [
+  { name: "RADWIMPS", genre: "Rock", description: "日本のロックバンド。", officialWebsite: "https://radwimps.jp" },
+  { name: "米津玄師", genre: "J-Pop", description: "日本のシンガーソングライター。", officialWebsite: "https://reissuerecords.net" },
+  { name: "宇多田ヒカル", genre: "Pop", description: "日本の歌手、作詞家。", officialWebsite: "https://www.utadahikaru.jp" },
+  { name: "BUMP OF CHICKEN", genre: "Rock", description: "日本のロックバンド。", officialWebsite: "https://www.bumpofchicken.com" },
+];
+
+function filterArtists(keyword) {
+  if (!keyword) return [];
+  keyword = keyword.toLowerCase();
+  return sampleArtists.filter(a => a.name.toLowerCase().includes(keyword));
+}
+
+artistSearchInput.addEventListener('input', () => {
+  const keyword = artistSearchInput.value.trim();
+  artistSuggestionsDiv.innerHTML = '';
+  artistInfoDiv.innerHTML = '';
+  addArtistBtn.disabled = true;
+  selectedArtist = null;
+
+  if (keyword.length === 0) return;
+
+  const results = filterArtists(keyword);
+  if (results.length === 0) {
+    artistSuggestionsDiv.textContent = '該当するアーティストが見つかりません。';
     return;
   }
 
-  const artistItem = document.createElement("div");
-  artistItem.setAttribute("data-id", artist.id);
-  artistItem.classList.add("my-artist-item");
-  artistItem.innerHTML = `
-    <h4>${artist.name}</h4>
-    <a href="${artist.website}" target="_blank">公式サイト</a>
+  results.forEach(artist => {
+    const div = document.createElement('div');
+    div.textContent = artist.name;
+    div.addEventListener('click', () => {
+      selectedArtist = artist;
+      showArtistInfo(artist);
+      artistSuggestionsDiv.innerHTML = '';
+      addArtistBtn.disabled = false;
+    });
+    artistSuggestionsDiv.appendChild(div);
+  });
+});
+
+function showArtistInfo(artist) {
+  artistInfoDiv.innerHTML = `
+    <h3>${artist.name}</h3>
+    <p><strong>ジャンル:</strong> ${artist.genre}</p>
+    <p>${artist.description}</p>
+    <p><a href="${artist.officialWebsite}" target="_blank" rel="noopener noreferrer" style="color:#f48fb1;">公式サイトへ</a></p>
   `;
+}
 
-  myArtistsContainer.appendChild(artistItem);
+// --- マイアーティスト管理 ---
+function loadMyArtists() {
+  const data = localStorage.getItem('myArtists');
+  myArtists = data ? JSON.parse(data) : [];
+}
 
-  alert(`${artist.name} をマイアーティストに追加しました！`);
+function saveMyArtists() {
+  localStorage.setItem('myArtists', JSON.stringify(myArtists));
+}
+
+function renderMyArtists() {
+  myArtistListUl.innerHTML = '';
+  if (myArtists.length === 0) {
+    myArtistListUl.innerHTML = '<li>まだアーティストが登録されていません。</li>';
+    return;
+  }
+  myArtists.forEach(artist => {
+    const li = document.createElement('li');
+    li.textContent = artist.name;
+    // 削除ボタン
+    const delBtn = document.createElement('button');
+    delBtn.textContent = '×';
+    delBtn.style.marginLeft = '10px';
+    delBtn.style.cursor = 'pointer';
+    delBtn.addEventListener('click', () => {
+      myArtists = myArtists.filter(a => a.name !== artist.name);
+      saveMyArtists();
+      renderMyArtists();
+      addNotification(`アーティスト「${artist.name}」を削除しました。`);
+    });
+    li.appendChild(delBtn);
+    myArtistListUl.appendChild(li);
+  });
+}
+
+// --- 通知機能 ---
+function addNotification(text) {
+  const now = new Date();
+  notifications.unshift({ text, time: now.toLocaleTimeString() });
+  renderNotifications();
+}
+
+function renderNotifications() {
+  notificationListUl.innerHTML = '';
+  if (notifications.length === 0) {
+    notificationListUl.innerHTML = '<li>通知はありません。</li>';
+    return;
+  }
+  notifications.forEach(n => {
+    const li = document.createElement('li');
+    li.textContent = `[${n.time}] ${n.text}`;
+    notificationListUl.appendChild(li);
+  });
+}
+
+// --- 「マイアーティストに追加」ボタンイベント ---
+addArtistBtn.addEventListener('click', () => {
+  if (!selectedArtist) return;
+  if (myArtists.some(a => a.name === selectedArtist.name)) {
+    alert('既に登録されています');
+    return;
+  }
+  myArtists.push(selectedArtist);
+  saveMyArtists();
+  renderMyArtists();
+  addNotification(`アーティスト「${selectedArtist.name}」をマイアーティストに追加しました。`);
+  addArtistBtn.disabled = true;
+  artistInfoDiv.innerHTML = '';
+  artistSearchInput.value = '';
+});
+
+// --- カレンダー機能（簡易版） ---
+function renderCalendar(year, month) {
+  calendarBody.innerHTML = '';
+  const firstDay = new Date(year, month, 1);
+  const lastDay = new Date(year, month + 1, 0);
+  const startDayOfWeek = firstDay.getDay(); // 日曜=0
+  const daysInMonth = lastDay.getDate();
+
+  monthYearSpan.textContent = `${year}年 ${month + 1}月`;
+
+  for (let week = 0; week < 6; week++) {
+    let row = '<tr>';
+    for (let day = 0; day < 7; day++) {
+      if (week === 0 && day < startDayOfWeek) {
+        row += '<td></td>';
+      } else {
+        const dayCount = week * 7 + day - startDayOfWeek + 1;
+        if (dayCount > daysInMonth) {
+          row += '<td></td>';
+        } else {
+          const today = new Date();
+          const isToday = (dayCount === today.getDate() && month === today.getMonth() && year === today.getFullYear());
+          row += `<td class="${isToday ? 'today' : ''}" data-date="${year}-${String(month + 1).padStart(2, '0')}-${String(dayCount).padStart(2, '0')}">${dayCount}</td>`;
+        }
+      }
+    }
+    row += '</tr>';
+    calendarBody.innerHTML += row;
+  }
 }
