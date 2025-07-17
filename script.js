@@ -24,6 +24,63 @@ const saveEventBtn = document.getElementById('saveEvent');
 const eventDetailPanel = document.getElementById('eventDetailPanel');
 const eventDetailContent = document.getElementById('eventDetailContent');
 
+// --- アーティスト詳細モーダル制御 ---
+const artistDetailModal = document.getElementById('artistDetailModal');
+const artistDetailModalBody = document.getElementById('artistDetailModalBody');
+const artistDetailModalClose = document.getElementById('artistDetailModalClose');
+if (artistDetailModalClose) {
+  artistDetailModalClose.onclick = () => { artistDetailModal.style.display = 'none'; };
+}
+window.addEventListener('click', e => {
+  if (e.target === artistDetailModal) artistDetailModal.style.display = 'none';
+});
+
+async function showArtistDetailModal(artist) {
+  // まずローカル情報
+  let html = `<h2 style='color:#f48fb1;'>${artist.name}</h2>`;
+  if (artist.genre) html += `<div><b>ジャンル:</b> ${artist.genre}</div>`;
+  if (artist.description) html += `<div><b>説明:</b> ${artist.description}</div>`;
+  if (artist.officialWebsite) html += `<div><a href='${artist.officialWebsite}' target='_blank' rel='noopener noreferrer' style='color:#f48fb1;'>公式サイトへ</a></div>`;
+  // API連携で追加情報
+  html += `<div id='artistDetailApiInfo' style='margin-top:12px;'></div>`;
+  artistDetailModalBody.innerHTML = html;
+  artistDetailModal.style.display = 'flex';
+  // MusicBrainz APIで追加情報取得
+  const apiInfoDiv = document.getElementById('artistDetailApiInfo');
+  apiInfoDiv.textContent = '追加情報取得中...';
+  try {
+    const url = `https://musicbrainz.org/ws/2/artist/?query=artist:${encodeURIComponent(artist.name)} AND country:JP&fmt=json&limit=1&inc=aliases+tags+url-rels`;
+    const res = await fetch(url, { headers: { 'Accept': 'application/json' } });
+    if (res.ok) {
+      const data = await res.json();
+      if (data.artists && data.artists.length > 0) {
+        const a = data.artists[0];
+        let apiHtml = '';
+        if (a['life-span'] && (a['life-span'].begin || a['life-span'].end)) {
+          apiHtml += `<div><b>活動期間:</b> ${a['life-span'].begin || ''} ～ ${a['life-span'].end || '現在'}</div>`;
+        }
+        if (a['type']) apiHtml += `<div><b>種別:</b> ${a['type']}</div>`;
+        if (a['tags'] && a['tags'].length > 0) {
+          apiHtml += `<div><b>タグ:</b> ${a['tags'].map(t=>t.name).join(', ')}</div>`;
+        }
+        if (a['relations']) {
+          const sns = a['relations'].filter(r => r.type && /twitter|youtube|instagram|facebook/i.test(r.type));
+          if (sns.length > 0) {
+            apiHtml += `<div><b>SNS:</b> ` + sns.map(r => `<a href='${r.url.resource}' target='_blank' style='color:#f48fb1;'>${r.type}</a>`).join(' / ') + `</div>`;
+          }
+        }
+        apiInfoDiv.innerHTML = apiHtml || '追加情報はありません。';
+      } else {
+        apiInfoDiv.textContent = '追加情報はありません。';
+      }
+    } else {
+      apiInfoDiv.textContent = '追加情報取得失敗';
+    }
+  } catch {
+    apiInfoDiv.textContent = '追加情報取得失敗';
+  }
+}
+
 let currentView = 'search'; // 現在表示中のセクションID
 let selectedArtist = null; // 現在選択中のアーティストオブジェクト
 let myArtists = [];
@@ -211,7 +268,7 @@ function saveMyArtists() {
   localStorage.setItem('myArtists', JSON.stringify(myArtists));
 }
 
-function renderMyArtists() {
+async function renderMyArtists() {
   myArtistListUl.innerHTML = '';
   if (myArtists.length === 0) {
     myArtistListUl.innerHTML = '<li>まだアーティストが登録されていません。</li>';
@@ -224,6 +281,8 @@ function renderMyArtists() {
     const nameDiv = document.createElement('div');
     nameDiv.className = 'artist-name';
     nameDiv.textContent = artist.name;
+    nameDiv.style.cursor = 'pointer';
+    nameDiv.onclick = () => showArtistDetailModal(artist);
     li.appendChild(nameDiv);
     // ジャンル・説明
     if (artist.genre || artist.description) {
