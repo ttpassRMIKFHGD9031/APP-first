@@ -89,27 +89,57 @@ navButtons.forEach(btn => {
   });
 });
 
-// --- アーティスト検索 ---
+// --- 文字列正規化（ひらがな・カタカナ・ローマ字・全角半角対応） ---
+function normalize(str) {
+  if (!str) return '';
+  // 全角→半角
+  str = str.replace(/[Ａ-Ｚａ-ｚ０-９]/g, s => String.fromCharCode(s.charCodeAt(0) - 0xFEE0));
+  // カタカナ→ひらがな
+  str = str.replace(/[ァ-ン]/g, s => String.fromCharCode(s.charCodeAt(0) - 0x60));
+  // 小文字カタカナ→ひらがな
+  str = str.replace(/ヵ/g, 'か').replace(/ヶ/g, 'け').replace(/ッ/g, 'つ').replace(/ャ/g, 'や').replace(/ュ/g, 'ゆ').replace(/ョ/g, 'よ');
+  // ローマ字は小文字化
+  str = str.toLowerCase();
+  // スペース・記号除去
+  str = str.replace(/\s|\-|\_|\./g, '');
+  return str;
+}
+
+// --- ローカル候補の多言語対応フィルタ ---
 function filterArtists(keyword) {
   if (!keyword) return [];
-  keyword = keyword.toLowerCase();
-  return sampleArtists.filter(a => a.name.toLowerCase().includes(keyword));
+  const normKey = normalize(keyword);
+  return sampleArtists.filter(a => {
+    // name, description, genre, romaji（あれば）で比較
+    const fields = [a.name, a.genre, a.description, a.romaji].filter(Boolean);
+    return fields.some(f => normalize(f).includes(normKey));
+  });
 }
 
 // --- MusicBrainz APIからアーティスト検索 ---
 async function searchArtistsFromAPI(keyword) {
-  const url = `https://musicbrainz.org/ws/2/artist/?query=artist:${encodeURIComponent(keyword)} AND country:JP&fmt=json&limit=10`;
+  const url = `https://musicbrainz.org/ws/2/artist/?query=artist:${encodeURIComponent(keyword)} AND country:JP&fmt=json&limit=10&inc=aliases`;
   try {
     const res = await fetch(url, { headers: { 'Accept': 'application/json' } });
     if (!res.ok) throw new Error('API取得失敗');
     const data = await res.json();
     // APIのartist配列から必要な情報を抽出
-    return data.artists.map(a => ({
-      name: a.name,
-      genre: a['type'] || '',
-      description: a.disambiguation || '',
-      officialWebsite: (a.relations && a.relations.find(r => r.type === 'official homepage')?.url?.resource) || ''
-    }));
+    return data.artists.map(a => {
+      // aliasやローマ字名も候補に使う
+      let romaji = '';
+      if (a.aliases) {
+        const roma = a.aliases.find(al => /latin|ローマ字/i.test(al.script) || /romaji/i.test(al.name));
+        if (roma) romaji = roma.name;
+      }
+      return {
+        name: a.name,
+        genre: a['type'] || '',
+        description: a.disambiguation || '',
+        officialWebsite: (a.relations && a.relations.find(r => r.type === 'official homepage')?.url?.resource) || '',
+        romaji,
+        _api: true // API候補フラグ
+      };
+    });
   } catch (e) {
     console.error(e);
     return [];
@@ -131,12 +161,14 @@ artistSearchInput.addEventListener('input', async () => {
   let results = filterArtists(keyword);
 
   // ローカル候補が5件未満ならAPIも利用
+  let apiResults = [];
   if (results.length < 5) {
-    const apiResults = await searchArtistsFromAPI(keyword);
+    artistSuggestionsDiv.textContent = 'APIから取得中...';
+    apiResults = await searchArtistsFromAPI(keyword);
     // ローカル候補と重複しないものだけ追加
-    const localNames = new Set(results.map(a => a.name));
+    const localNames = new Set(results.map(a => normalize(a.name)));
     apiResults.forEach(a => {
-      if (!localNames.has(a.name)) results.push(a);
+      if (!localNames.has(normalize(a.name))) results.push(a);
     });
   }
 
@@ -145,9 +177,11 @@ artistSearchInput.addEventListener('input', async () => {
     return;
   }
 
+  artistSuggestionsDiv.innerHTML = '';
   results.forEach(artist => {
     const div = document.createElement('div');
-    div.textContent = artist.name;
+    div.textContent = artist.name + (artist._api ? ' (API)' : '');
+    div.title = [artist.romaji, artist.genre, artist.description].filter(Boolean).join(' / ');
     div.addEventListener('click', () => {
       selectedArtist = artist;
       showArtistInfo(artist);
