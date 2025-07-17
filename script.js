@@ -258,7 +258,41 @@ function showEventInput(dateStr) {
   eventInputDiv.classList.remove('hidden');
   selectedDateP.textContent = dateStr;
   eventTextInput.value = '';
+  // 予定リスト表示
+  const eventListDivId = 'event-list-div';
+  let eventListDiv = document.getElementById(eventListDivId);
+  if (!eventListDiv) {
+    eventListDiv = document.createElement('div');
+    eventListDiv.id = eventListDivId;
+    eventInputDiv.insertBefore(eventListDiv, eventTextInput);
+  }
+  eventListDiv.innerHTML = '';
   if (events[dateStr] && events[dateStr].length > 0) {
+    const ul = document.createElement('ul');
+    events[dateStr].forEach((ev, idx) => {
+      const li = document.createElement('li');
+      li.textContent = ev;
+      // 削除ボタン
+      const delBtn = document.createElement('button');
+      delBtn.textContent = '削除';
+      delBtn.style.marginLeft = '8px';
+      delBtn.onclick = () => {
+        events[dateStr].splice(idx, 1);
+        if (events[dateStr].length === 0) delete events[dateStr];
+        saveEvents();
+        showEventInput(dateStr);
+        addNotification(`${dateStr} の予定「${ev}」を削除しました。`);
+        renderCalendar(currentYear, currentMonth);
+      };
+      li.appendChild(delBtn);
+      ul.appendChild(li);
+    });
+    eventListDiv.appendChild(ul);
+  } else {
+    eventListDiv.textContent = 'この日に予定はありません。';
+  }
+  // 入力欄にはカンマ区切りで既存予定を表示
+  if (events[dateStr]) {
     eventTextInput.value = events[dateStr].join(', ');
   }
   eventInputDiv.setAttribute('data-date', dateStr);
@@ -269,15 +303,30 @@ saveEventBtn.addEventListener('click', () => {
   const text = eventTextInput.value.trim();
   if (!dateStr) return;
   if (text) {
-    events[dateStr] = [text];
-    addNotification(`${dateStr} に予定「${text}」を追加しました。`);
+    // カンマ区切りで複数予定を保存
+    const newEvents = text.split(',').map(t => t.trim()).filter(t => t);
+    const before = events[dateStr] ? [...events[dateStr]] : [];
+    events[dateStr] = newEvents;
+    saveEvents();
+    renderCalendar(currentYear, currentMonth);
+    eventInputDiv.classList.add('hidden');
+    // 通知
+    if (before.length === 0 && newEvents.length > 0) {
+      addNotification(`${dateStr} に予定「${newEvents.join('」「')}」を追加しました。`);
+    } else if (before.join() !== newEvents.join()) {
+      addNotification(`${dateStr} の予定を更新しました: 「${newEvents.join('」「')}」`);
+    } else {
+      addNotification(`${dateStr} の予定は変更ありません。`);
+    }
   } else {
-    delete events[dateStr];
-    addNotification(`${dateStr} の予定を削除しました。`);
+    if (events[dateStr]) {
+      delete events[dateStr];
+      saveEvents();
+      renderCalendar(currentYear, currentMonth);
+      addNotification(`${dateStr} の予定をすべて削除しました。`);
+    }
+    eventInputDiv.classList.add('hidden');
   }
-  saveEvents();
-  renderCalendar(currentYear, currentMonth);
-  eventInputDiv.classList.add('hidden');
 });
 
 // 月移動ボタン
