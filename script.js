@@ -253,7 +253,7 @@ function showArtistInfo(artist) {
     <h3>${artist.name}</h3>
     <p><strong>ジャンル:</strong> ${artist.genre}</p>
     <p>${artist.description}</p>
-    <p><a href="${artist.officialWebsite}" target="_blank" rel="noopener noreferrer" style="color:#f48fb1;">公式サイトへ</a></p>
+    ${artist.officialWebsite ? `<p><a href="${artist.officialWebsite}" target="_blank" rel="noopener noreferrer" style="color:#f48fb1;">公式サイトへ</a></p>` : ''}
   `;
 }
 
